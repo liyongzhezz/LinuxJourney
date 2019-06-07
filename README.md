@@ -1,1 +1,2 @@
 # LinuxJourney
+笔记
