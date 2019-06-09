@@ -148,7 +148,7 @@ $ kubectl describe secret kubernetes-dashboard-token-92l5k -n kube-system
 
 
 
-在浏览器访问任意node节点ip的30866端口，例如：https://10.10.62.3:30866，将会进入如下的界面，选择令牌，粘贴进token并点击登录即可。![dashboard-login](statics/dashboard-login.png)
+在浏览器访问任意node节点ip的30866端口，例如：https://10.10.62.3:30866， 将会进入如下的界面，选择令牌，粘贴进token并点击登录即可。![dashboard-login](statics/dashboard-login.png)
 
 
 
