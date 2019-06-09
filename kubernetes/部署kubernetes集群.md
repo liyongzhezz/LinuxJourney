@@ -1171,3 +1171,4 @@ systemctl restart kube-proxy
 ## 匿名用户授权
 
 需要给匿名用户授权，否则无法通过kubectl连接pod。
+

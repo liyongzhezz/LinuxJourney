@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-controller-customconf
+  namespace: kube-system
+data:
+  access-log-path: "/dev/stderr"
+  disable-access-log: "true"
+  enable-vts-status: "true"
+  vts-status-zone-size: "200m"
+  proxy-body-size: "10m"
+  proxy-connect-timeout: "3"
+  proxy-send-timeout: "3"
+  proxy-read-timeout: "10"
+  upstream-max-fails: "3"
+  upstream-fail-timeout: "3"

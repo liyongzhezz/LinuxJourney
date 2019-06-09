@@ -1,0 +1,21 @@
+apiVersion:  extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: redis-test
+  namespace: default
+  labels:
+    xluser-app: redis-test
+spec:
+  template:
+    metadata:
+      labels:
+        xluser-app: redis-test
+    spec:
+      containers:
+      - image: redis:3.2
+        name: redis-test
+        imagePullPolicy: IfNotPresent
+        resources:
+        ports:
+        - containerPort: 6379
+
