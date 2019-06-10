@@ -148,7 +148,7 @@ $ kubectl describe secret kubernetes-dashboard-token-92l5k -n kube-system
 
 
 
-在浏览器访问任意node节点ip的30866端口，例如：https://10.10.62.3:30866， 将会进入如下的界面，选择令牌，粘贴进token并点击登录即可。![dashboard-login](statics/dashboard-login.png)
+在浏览器访问任意node节点ip的30866端口，例如：https://10.10.62.3:30866，将会进入如下的界面，选择令牌，粘贴进token并点击登录即可。![dashboard-login](statics/dashboard-login.png)
 
 
 
@@ -242,4 +242,129 @@ Address 2: 14.215.177.38
 > 在集群内通过dns解析service-name时，格式为：<service-name>.<namespace>.svc.<dns域名后缀>，也可以简写为 <service-name>.<namespace>；如果是发起解析请求的pod和目标servcie在同一个namespace，那么直接使用service-name就可以解析。
 
 
+
+# 部署ingress
+
+ingress是集群流量的入口，提供集群内服务对外访问，支持4层和7层负载均衡，只支持基于域名的访问，支持tls，具体实现由ingress-controller完成。
+
+
+
+## 文件准备
+
+ingress的yaml配置文件可以在yaml/ingress/ingress下找到。mandatory.yaml是ingress控制器的yaml配置文件。
+
+
+
+## 修改yaml文件
+
+- 修改mandatory.yaml在211行serviceAccountName: nginx-ingress-serviceaccount上增加hostNetwork: true启用宿主机网络
+- 可以将Deployment改为DaemonSet，或者增加RS的副本数；
+
+
+
+## 创建ingress
+
+执行如下命令创建ingress-conroller，并确保ingress服务正常启动。
+
+```bash
+$ kubectl create -f mandatory.yaml
+$ kubectl get pod -n ingress-nginx -o wide 
+
+NAME                                        READY   STATUS    RESTARTS   AGE    IP           NODE         NOMINATED NODE   READINESS GATES
+nginx-ingress-controller-678df7d6c7-hwq7q   1/1     Running   0          103s   10.10.62.3   10.10.62.3   <none>           <none>
+```
+
+
+
+# 部署metrics-server
+
+## metrics-server介绍
+
+metrics-server是用来替代heapster的（heapster已停止维护），用于从集群中获取监控指标以及为kubectl top、hpa提供运行基础接口。
+
+ 
+
+metrics-server像kube-apiserver一样，提供了很多api组，但它不是k8s组成部分，而是托管运行在k8s之上的Pod。为了让用户无缝的使用metrics-server当中的API，还需要把这类自定义的API，通过聚合器聚合到核心API组里，然后可以把此API当作是核心API的一部分，通过kubectl api-versions可直接查看。
+
+ 
+
+metrics-server收集指标数据的方式是从各节点上kubelet提供的Summary API 即10250端口收集数据，收集Node和Pod核心资源指标数据，主要是内存和cpu方面的使用情况，并将收集的信息存储在内存中，所以通过kubectl top不能查看资源数据的历史情况，其它资源指标数据则通过prometheus采集了。
+
+
+
+## 获取配置文件
+
+metrics-server的相关配置yaml文件可以在yaml/mtrics-server中找到。
+
+
+
+## 修改apiserver配置
+
+在前边部署apiserver时已经将下列参数加入apiserver配置文件中，这里再解释一下
+
+```bash
+--requestheader-client-ca-file=/opt/kubernetes/cert/ca.pem 
+--requestheader-username-headers=X-Remote-User 
+--requestheader-group-headers=X-Remote-Group 
+--requestheader-extra-headers-prefix=X-Remote-Extra- 
+--requestheader-allowed-names=""
+--proxy-client-key-file=/opt/kubernetes/cert/st01009vm2-key.pem 
+--proxy-client-cert-file=/opt/kubernetes/cert/st01009vm2.pem 
+--enable-aggregator-routing=true
+--runtime-config=api/all
+```
+
+- --requestheader-XXX、--proxy-client-XXX 是 kube-apiserver 的 aggregator layer 相关的配置参数，metrics-server & HPA 需要使用；
+- --requestheader-client-ca-file：用于签名 --proxy-client-cert-file 和 --proxy-client-key-file 指定的证书；在启用了 metric aggregator 时使用；
+- 如果 --requestheader-allowed-names 不为空，则--proxy-client-cert-file 证书的 CN 必须位于 allowed-names 中，默认为 aggregator，这里让其匹配所有名称；
+
+> 上边的参数已在部署apiserver时添加，后面添加的话记得重启kube-apiserver
+
+
+
+## 创建metrics-server
+
+执行下面的命令创建metrics-server
+
+```bash
+$ kubectl create -f .
+$ kubectl get pod -n kube-system | grep metrics
+
+metrics-server-v0.3.1-dd974554-bwh4z    2/2     Running   0          36s
+```
+
+
+
+## 测试
+
+创建完成后，待pod运行成功，执行下面的命令测试metrics-server是否成功运行
+
+```bash
+$ kubectl top node 
+
+NAME         CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
+10.10.62.3   44m          1%     1961Mi          53%       
+10.10.62.4   37m          0%     2118Mi          57%       
+10.10.62.5   35m          0%     2259Mi          61%
+```
+
+> 可以成功获取到资源的使用情况了，说明metrics-server运行成功。
+
+
+
+## 排错
+
+如果运行top命令的时候出现报错
+
+```bash
+Error from server (Forbidden): nodes.metrics.k8s.io is forbidden: User "kubernetes" cannot list nodes.metrics.k8s.io at the cluster scope
+```
+
+
+
+那么需要执行如下命令绑定权限
+
+```bash
+kubectl create clusterrolebinding kubernetes-clusteradmin-binding --clusterrole=cluster-admin --user=kubernetes
+```
 
