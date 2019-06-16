@@ -368,3 +368,116 @@ Error from server (Forbidden): nodes.metrics.k8s.io is forbidden: User "kubernet
 kubectl create clusterrolebinding kubernetes-clusteradmin-binding --clusterrole=cluster-admin --user=kubernetes
 ```
 
+
+
+
+
+# 集群监控
+
+## 集群监控指标
+
+对k8s集群进行监控，主要分为两大块：
+
+- 集群资源监控：
+  - 集群资源使用率监控；
+  - 节点状态监控；
+  - 运行pod监控；
+  - ...
+- pod监控：
+  - kubernetes指标监控；
+  - 容器指标监控；
+  - 应用程序监控；
+
+
+
+## 监控解决方案
+
+- zabbix：老牌监控工具，支持报警，可进行大量订制，适合绝大多数场景；
+- open-falcon：支持告警，功能模块更细，更复杂，适合应用程序和系统监控；
+- cadvisor+influxdb+grafana：支持告警，简单易用，适合于容器监控；
+- prometheus+grafana：扩展性好，图形界面优秀，可自定义监控图表，适合主机、服务和容器，社区推荐；
+
+> 这里我采用的就是 prometheus+grafana的方案。
+
+
+
+## 使用exporter+prometheus+grafana监控集群
+
+- exporter：负责收集监控指标；
+- prometheus：时序数据库，存储监控数据；
+- grafana：绘制展示图表；
+
+> 所有的yaml文件和grafana模板都可以在yaml/plmxs下找到。
+
+
+
+首先执行下面的命令创建node-exporter：
+
+```bash
+$ kubectl create -f node-exporter-ds.yaml
+$ kubectl create -f node-exporter-service.yaml
+$ kubectl get pod,svc -n kube-system | grep node-exporter
+
+pod/node-exporter-78f6m                     1/1     Running   0          4h5m
+pod/node-exporter-d44lz                     1/1     Running   0          4h5m
+pod/node-exporter-zzqpr                     1/1     Running   0          4h5m
+service/node-exporter          ClusterIP   172.24.28.23     <none>        9100/TCP         2s
+```
+
+
+
+执行下面的命令创建prometheus：
+
+```bash
+$ kubectl create -f prometheus-rbac.yaml
+$ kubectl create -f prometheus-configmap.yaml
+$ kubectl create -f prometheus-statefulset.yaml
+$ kubectl create -f prometheus-service.yaml
+$ kubectl create -f prometheus-nodeport-service.yaml
+$ kubectl create -f prometheus-ingress.yaml
+$ kubectl get pod,svc,ingress,cm -n kube-system | grep prometheus
+
+pod/prometheus-0                            2/2     Running   0          76m
+service/prometheus             ClusterIP   172.24.91.1      <none>        9090/TCP         161m
+service/prometheus-nodeport    NodePort    172.24.222.231   <none>        9090:30003/TCP   15m
+ingress.extensions/prometheus   prometheus.example.com             80      176m
+configmap/prometheus-config        
+```
+
+
+
+执行下面的命令创建grafana：
+
+```bash
+$ kubectl create -f grafana-deploy.yaml
+$ kubectl create -f grafana-service.yaml
+$ kubectl create -f grafana-ingress.yaml
+$ kubectl get pod,svc,ingress -n kube-system | grep grafana
+
+pod/grafana-core-7f9b7bc5bf-pd95l           1/1     Running   0          29m
+service/grafana                ClusterIP   172.24.92.91     <none>        3000/TCP         25m
+ingress.extensions/grafana      grafana.example.com                80      24m
+```
+
+
+
+## 访问测试
+
+首先测试prometheus，从浏览器访问相关域名或ip，若能进入prometheus的界面则运行成功，需要确保status/targets下的所有监控项状态都为up
+
+![1560673158067](statics/prometheus.jpg)
+
+
+
+> 我是通过ingress访问的prometheus和grafana，也可以通过nodeport方式
+
+
+
+然后测试grafana，默认用户名和密码为admin/admin，如果能够登陆，则grafana也正常。
+
+![](statics/grafana.png)
+
+
+
+之后添加相应的数据源，并导入grafana模板就可以使用了。
+
