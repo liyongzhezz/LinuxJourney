@@ -8,11 +8,12 @@
 参数：
     user：发送者，格式为string
     password：发送者密码，格式string
-    receivers：接收邮件的人，格式list
-    subject：邮件主题，格式string
-    mail_server_smtp：smtp邮件服务器地址
-    timeout：超时时间
-    attachment：邮件附件文件绝对路径，格式string
+    receivers：接收邮件的人，格式为list
+    subject：邮件主题，格式为string
+    mail_server_smtp：smtp邮件服务器地址，格式为string
+    timeout：超时时间，格式为int，默认30秒
+    attachment：邮件附件文件绝对路径，格式string，默认为None表示不添加附件
+    attachment_name：附件名称，作为邮件附件显示的名字，格式为string，默认为None
 '''
 
 from smtplib import SMTP_SSL
