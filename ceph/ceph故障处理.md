@@ -20,7 +20,7 @@ ceph 集群中使用ceph osd tree 命令发现有osd的状态为down。
 
 首先手动激活此osd，例如：
 
-```bash
+```
 $ ceph-deploy osd activate ceph-44:/dev/sdd
 ```
 
@@ -70,7 +70,7 @@ $ ceph-deploy osd activate ceph-44:/dev/sdf1
 
  
 
-**1.4、检测**
+## 检测
 
 执行上述步骤且没有出现问题后，ceph将开始进行数据重新平衡，速度取决于网络、服务器配置和数据量，最终应该达到如下的效果：
 
