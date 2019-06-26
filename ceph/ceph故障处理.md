@@ -93,8 +93,8 @@ $ ceph -s
 
 在添加了一个pool后，ceph集群进入和 `WARNING  `  状态，使用 `ceph -s`  查看到下面的报错：
 
-    ```bash
-cluster 9dc6e787-661e-46bb-a2a3-32ad9811ea4a
+```bash
+    cluster 9dc6e787-661e-46bb-a2a3-32ad9811ea4a
 
      health HEALTH_WARN
 
@@ -116,8 +116,8 @@ cluster 9dc6e787-661e-46bb-a2a3-32ad9811ea4a
 
                 6144 active+clean
 
-  client io 361 kB/s wr, 0 op/s rd, 67 op/s wr
-    ```
+    client io 361 kB/s wr, 0 op/s rd, 67 op/s wr
+```
 
 
 
