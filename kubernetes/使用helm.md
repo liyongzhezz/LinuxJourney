@@ -18,7 +18,7 @@ helm是Kubernetes的一个包管理工具，用来简化Kubernetes应用的部�
 
 ## Helm有如下几个基本概念：
 
-Chart: 是Helm管理的安装包，里面包含需要部署的安装包资源。可以把Chart比作CentOS yum使用的rpm文件。每个Chart包含下面两部分：
+Chart: 是Helm管理的安装包，里面包含需要部署的安装包资源。可以把Chart比作CentOS yum使用的rpm文件。每个Chart包含下面的部分：
 
 
 
