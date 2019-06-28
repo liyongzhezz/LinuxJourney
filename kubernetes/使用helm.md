@@ -349,6 +349,8 @@ ignoble-wolf	1       	Thu Jun 27 19:17:33 2019	DEPLOYED	hello-svc-0.1.0	1.0     
 
 
 
+## 删除chart
+
 想要删除这个release可以使用如下的命令：
 
 ```bash
@@ -370,6 +372,49 @@ Successfully packaged chart and saved it to: /opt/kubernetes/yaml/hello-svc/hell
 > 会在当前目录下生成该chart的压缩文件
 
 
+
+
+
+## 添加源
+
+可以添加其他第三方的源，例如：
+
+```bash
+# 添加fabric8库
+$ helm repo add fabric8 https://fabric8.io/helm
+$ help repo list
+NAME   	URL                                             
+stable 	https://kubernetes-charts.storage.googleapis.com
+local  	http://127.0.0.1:8879/charts                    
+fabric8	https://fabric8.io/helm
+```
+
+
+
+添加好了之后，可以通过下面的命令查看fabric8提供了哪些资源：
+
+```bash
+$ helm search fabric8
+NAME                                	CHART VERSION	APP VERSION	DESCRIPTION                                                 
+fabric8/fabric8-camel               	2.2.168      	           	Sonatype helps open source projects to set up Maven repos...
+fabric8/fabric8-console             	2.2.199      	           	Sonatype helps open source projects to set up Maven repos...
+fabric8/fabric8-docker-registry     	2.2.327      	           	[Docker Registry](https://github.com/docker/distribution)...
+fabric8/fabric8-dsaas               	1.0.54       	           	The Fabric8 Online Platform                                 
+fabric8/fabric8-forge               	2.3.90       	           	Fabric8 :: Forge                                            
+fabric8/fabric8-online              	1.0.20       	           	The Fabric8 Online Platform                                 
+fabric8/fabric8-online-team         	1.0.54       	           	The Fabric8 Microservices Online :: Team  
+......
+```
+
+
+
+## helm命令自动补全
+
+使用下面的命令可以实现helm命令的自动补全：
+
+```bash
+$ source <(helm completion bash)
+```
 
 
 
