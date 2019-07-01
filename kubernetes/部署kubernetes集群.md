@@ -159,8 +159,15 @@ mkdir -p /opt/kubernetes/{bin,cert/config,conf,etcd,yaml,log}
 
 ```bash
 mkdir -p /opt/kubernetes/{bin,cert,conf,log}
+mkdir /var/lib/docker
 ```
 
+在node节点，给docker数据目录挂载一个数据盘，推荐使用SSD（我用的是700Gssd），这里对数据盘的分区和格式化过程就略过了
+```bash
+echo "/dev/vdb1    /var/lib/container/     ext4    defaults        0 0" >> /etc/fstab
+echo "/var/lib/container/docker /var/lib/docker none defaults,bind 0 0" >> /etc/fstab
+echo "/var/lib/container/kubelet /var/lib/kubelet none defaults,bind 0 0" >> /etc/fstab
+```
 
 
 ## 安装docker
