@@ -167,6 +167,7 @@ mkdir /var/lib/docker
 echo "/dev/vdb1    /var/lib/container/     ext4    defaults        0 0" >> /etc/fstab
 echo "/var/lib/container/docker /var/lib/docker none defaults,bind 0 0" >> /etc/fstab
 echo "/var/lib/container/kubelet /var/lib/kubelet none defaults,bind 0 0" >> /etc/fstab
+mount -a 
 ```
 
 
