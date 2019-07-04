@@ -92,7 +92,7 @@ $ cat > /etc/docker/daemon.json << EOF
       "log-level": "debug",
 
       "selinux-enabled": false,
-      "registry-mirrors": ["http://registry.xunlei.cn"]
+      "insecure-registries": ["http://test.harbor.com"]
 }
 EOF
 ```
