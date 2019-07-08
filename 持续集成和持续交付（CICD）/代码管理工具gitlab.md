@@ -303,8 +303,3 @@ gitlab_rails['gitlab_email_reply_to'] = 'gitlab@example.com'
 gitlab-ctl reconfigure
 ```
 
-
-
-## 备份和还原
-
-rpm方式安装的gitlab，所有默认配置都放在 `/etc/gitlab` 下，其中 `gitlab.rb` 是主配置文件，`gitlab-secrets.json` 是数据库加密秘钥等加密信息文件，这些文件都需要手动备份，备份命令无法备份这些文件。
