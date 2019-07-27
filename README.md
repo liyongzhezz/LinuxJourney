@@ -5,13 +5,15 @@
 
 ## Linux基础部分
 
-[Linux基础]([https://github.com/liyongzhezz/LinuxJourney/tree/master/Linux%E5%9F%BA%E7%A1%80](https://github.com/liyongzhezz/LinuxJourney/tree/master/Linux基础))
+[Linux基础](https://github.com/liyongzhezz/LinuxJourney/tree/master/Linux%E5%9F%BA%E7%A1%80)
 
 
 
 ## 存储部分
 
 [Ceph分布式存储](https://github.com/liyongzhezz/LinuxJourney/tree/master/ceph)
+
+
 
 
 
