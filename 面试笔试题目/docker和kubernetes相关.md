@@ -146,4 +146,29 @@ pause容器在pod中担任linux命名空间共享的基础，启用pid命名空�
 
 
 
+# pod资源限制中Request和Limit的区别
+
+- Request：容器使用的最少资源需求，只有当节点可分配的资源 **大于等于** 该参数设定的值时，才允许pod被调度到该节点上；
+- Limit：容器使用的最大资源值(设置为0表示无限制)，作用是防止pod无限使用节点资源导致其他pod甚至节点崩溃；
+
+
+
+Request和Limit应当满足：`0<=Request<=Limit` 的关系(在同时制定Request和Limit时)
+
+
+
+在内存限制时，通常用 `Mi` 作为单位，表示 `MiB` 大小的内存；CPU限制通常用 `m` 为单位的后缀，表示千分之一核，可以是整型或者浮点型，例如下面的例子：
+
+```bash
+resources:
+  requests:
+    memory: 50Mi
+    cpu: 50m
+  limits:
+    memory: 100Mi
+    cpu: 100m
+```
+
+> pod请求最少使用50MiB的内存，0.05%的CPU时间；最大使用100MiB内存，0.1%的CPU时间
+
  
