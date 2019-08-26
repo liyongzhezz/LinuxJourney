@@ -4,6 +4,7 @@
 
 
 
-最核心的是 login_falcon.py 文件，它通过一个用户（一般为root）登录系统，获取一个sig，这个参数作为后面程序中认证的重要参数来使用。
+最核心的是 [login_falcon.py](https://github.com/liyongzhezz/LinuxJourney/blob/master/python%E7%A8%8B%E5%BA%8F%E5%B7%A5%E5%85%B7/open-falcon%E6%8E%A5%E5%8F%A3%E7%A8%8B%E5%BA%8F/%E7%99%BB%E5%BD%95%E7%9B%B8%E5%85%B3.md#%E7%99%BB%E5%BD%95open-falcon) 文件，它通过一个用户（一般为root）登录系统，获取一个sig，这个参数作为后面程序中认证的重要参数来使用。
 
 > 如果没有退出，这个sig值是不会变的
+
