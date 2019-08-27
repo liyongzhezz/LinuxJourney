@@ -1,3 +1,65 @@
+# logstash介绍
+
+## logstash 基本概念
+
+logstash 是一个轻量级、开源的服务器端数据处理管道，允许您从各种来源收集数据，进行动态转换，并将数据发送到您希望的目标。它最常用作 Elasticsearch 的数据管道，并和kibana结合组成elk提供日志的可视化服务。
+
+
+
+logstash类似于信息处理的管道，数据从一端进入然后从另一端输出，logstash可以在中间对数据进行加工。实际上logstash 是用不同的线程来实现这些的。如果你运行 top 命令然后按下 H 键，你就可以看到下面这样的输出：
+
+```bash
+PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND                       
+21401 root      16   0 1249m 303m  10m S 18.6  0.2 866:25.46 |worker                     
+21467 root      15   0 1249m 303m  10m S  3.7  0.2 129:25.59 >elasticsearch.             
+21468 root      15   0 1249m 303m  10m S  3.7  0.2 128:53.39 >elasticsearch.             
+21400 root      15   0 1249m 303m  10m S  2.7  0.2 108:35.80 <file                       
+21403 root      15   0 1249m 303m  10m S  1.3  0.2  49:31.89 >output                     
+21470 root      15   0 1249m 303m  10m S  1.0  0.2  56:24.24 >elasticsearch.
+```
+
+
+
+> logstash给每个线程都取了名字，输入的叫input，过滤的叫filter（对数据进行一定的处理），输出叫output。数据在线程之间以事件的形式流传。
+
+
+
+**因为 logstash 可以处理多行事件所以不能称作行而要称作事件。**
+
+ 
+
+logstash会给事件添加一些额外信息，最重要的就是 @timestamp，用来标记事件的发生时间。因为这个字段涉及到 logstash 的内部流转，所以必须是一个 joda 对象。
+
+> 如果你尝试自己给一个字符串字段重命名为 @timestamp 的话，logstash 会直接报错。所以，请使用 filters/date 插件 来管理这个特殊字段。
+
+ 
+
+具体实现，logstash使用FileWatch 的 Ruby Gem 库来监听文件变化。这个库支持 glob 展开文件路径，而且会记录一个叫 `.sincedb` 的数据库文件来跟踪被监听的日志文件的当前读取位置。
+
+**sincedb 文件中记录了每个被监听的文件的 inode, major number, minor number 和 pos**
+
+
+
+## logstash命令行参数
+
+- -e：执行，不指定配置文件，而是将配置直接写在命令后
+- -f：指定配置文件，也可以指定一个目录，这样logstash就会自动按照字母排序读取目录下所有conf文件并在内存中组合成为一个新的配置文件
+- -t：检测配置文件是否能够正常解析
+
+ 
+
+## logstash组件
+
+- input：负责从某一地方读取数据，可以是标准输入、文件、队列等；
+- filter：负责对数据进行加工，例如删除字段、添加字段、修改字段等；
+- output：负责将数据输出到某一位置，可以使es、队列等；
+
+
+
+logstash处理数据的流程也是按照 input --> filter --> output的顺序进行的。
+
+
+
 # 从标准输入输入，从标准输出输出
 
 logstash可以接受标准输入的内容，进行一定处理后输出到标准输出中，这种方式常用于调试，例如：
@@ -530,5 +592,52 @@ output {
 EOF
 
 /usr/local/logstash-5.6.4/bin/logstash -f httpd.conf
+```
+
+
+
+# 配置实例
+
+```bash
+input {
+    file {
+        path => "/var/log/httpd/access_log"
+        start_position => "beginning"
+		type => "apache-accesslog"
+    }
+    file {
+        path => "/var/log/elasticsearch/myes.log"
+        type => "es-log"
+        start_position => "beginning"
+        codec => multiline {
+            pattern => "^\["
+            negate => true
+            what => "previous"
+        }
+    }
+}
+
+filter {}
+
+output {
+    if [type] == "apache-accesslog" {
+	    redis {
+            host => "10.10.97.48"
+			port => "6379"
+			db => "6"
+			data_type => "list"
+			key => "apache-accesslog"
+		}
+	}
+    if [type] == "es-log" {
+	    redis {
+            host => "10.10.97.48"
+			port => "6379"
+			db => "6"
+			data_type => "list"
+			key => "es-log"
+		}
+	}
+}
 ```
 
