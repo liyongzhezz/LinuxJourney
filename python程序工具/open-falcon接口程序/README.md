@@ -8,3 +8,10 @@
 
 > 如果没有退出，这个sig值是不会变的
 
+
+
+- login_falcon.py：登录falcon
+- get_user_list.py：获取用户列表
+- get_graph_history.py：获取图表历史数据
+- get_endpoints.py：获取endpoint
+- get_alarm.py：获取历史报警

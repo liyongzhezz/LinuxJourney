@@ -1,22 +1,20 @@
-# 获取用户列表
-
-```python
-#!/usr/bin/python
 import requests
 
 from login_falcon import login_falcon
 
-falcon_url = 'http://falcon.example.cn:8080/api/v1/user/users'
 
-def get_user_list(data):
+@login_falcon
+def get_user_list(obj):
     '''获取系统中的用户列表'''
-    if data['code'] != 200:
+    if obj['code'] != 200:
         print('open-falcon 登陆失败')
-        return data['code']
+        return obj['code']
     else:
-        data = data['data']
+        obj = obj['data']
 
-    tokens = "{\"name\":\"" + data['name'] + "\",\"sig\":\"" + data['sig'] + "\"}"
+    falcon_url = 'http://falcon.example.cn:8080/api/v1/user/users'
+
+    tokens = "{\"name\":\"" + obj['name'] + "\",\"sig\":\"" + obj['sig'] + "\"}"
     headers = {
         "Content-Type": "application/json",
         "Apitoken": tokens,
@@ -27,16 +25,12 @@ def get_user_list(data):
         return {'code': resp.status_code, 'data': resp.text}
     else:
         return {'code': resp.status_code, 'data': []}
-    
+
+
 if __name__ == '__main__':
-    data = login_falcon()
-    result = get_user_list(data)
+    result = get_user_list()
 
     if result['code'] != 200:
         print('获取用户列表失败')
     else:
         print(result['data'])
-```
-
-
-
