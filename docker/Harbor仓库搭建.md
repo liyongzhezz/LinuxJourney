@@ -215,7 +215,7 @@ tcp        0      0 10.15.0.164:80          0.0.0.0:*               LISTEN      
 tcp        0      0 10.15.0.164:443         0.0.0.0:*               LISTEN      9866/docker-proxy   
 tcp        0      0 10.15.0.164:4443        0.0.0.0:*               LISTEN      9809/docker-proxy  
 
-docker ps 
+$ docker ps 
 CONTAINER ID        IMAGE                                  COMMAND                  CREATED             STATUS                    PORTS                                                                          NAMES
 1fd5462b0933        vmware/harbor-jobservice:v1.5.2        "/harbor/start.sh"       54 seconds ago      Up 50 seconds                                                                                            harbor-jobservice
 8627ade5943b        vmware/nginx-photon:v1.5.2             "nginx -g 'daemon of…"   54 seconds ago      Up 41 seconds (healthy)   10.15.0.164:80->80/tcp, 10.15.0.164:443->443/tcp, 10.15.0.164:4443->4443/tcp   nginx
@@ -231,4 +231,86 @@ e4362a273d57        vmware/harbor-log:v1.5.2               "/bin/sh -c /usr/loc�
 
 
 
+
+# harbor使用
+
+
+
+## 访问harbor
+
+安装完成后，通过浏览器访问 80 端口即可进入harbor登录界面：
+
+![](statics/harbor-login.png)
+
+默认用户名是`admin`，密码是在 `harbor.cfg` 中设置的 `admin_password` 字段的值。
+
+
+
+## 新建项目
+
+默认系统自动添加了library项目，也可以点击项目标签下边的 新建项目 来添加一个新的项目。
+
+![](statics/create.png)
+
+**这里创建了一个名为test的项目，并且把它标记为 公开的项目，这样所有人都可以访问这个项目。**
+
+
+
+## 创建用户
+
+默认系统有一个admin用户，可以根据实际情况创建多个用户。点击左侧 用户管理 --> 创建用户：
+
+![](statics/create-user.png)
+
+
+
+## 上传、拉取镜像
+
+这里在本机下载一个nginx作为测试：
+
+```bash
+$ docker pull nginx
+```
+
+
+
+首先需要登录镜像仓库：
+
+```bash
+$ docker login 10.10.99.226
+```
+
+**根据提示输入用户名密码**
+
+ 
+
+上传前需要给待上传的镜像打标签：
+
+```bash
+$ docker tag nginx 10.10.99.226/test/nginx:v1
+```
+
+**标签格式为 [harbor地址]/仓库名/镜像名:[版本]**
+
+ 
+
+打完标签就可以上传镜像了：
+
+```bash
+$ docker push 10.10.99.226/test/nginx:v1
+```
+
+
+
+![](statics/upload-image.png)
+
+
+
+下载镜像很简单，在仓库中点击这个镜像的名字，有一个复制拉取镜像的命令，点击一下然后执行即可。
+
+```bash
+$ docker pull 10.10.99.226/test/nginx:v1
+```
+
+**如果是私有仓库的镜像，需要先登录**
 
