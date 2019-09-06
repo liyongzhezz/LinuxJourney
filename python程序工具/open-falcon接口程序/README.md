@@ -16,3 +16,4 @@
 - get_endpoints.py：获取endpoint
 - get_alarm.py：获取历史报警
 - push_data.py：推送数据到open-falcon
+- get_all_dashboards.py：获取所有dashboad信息
