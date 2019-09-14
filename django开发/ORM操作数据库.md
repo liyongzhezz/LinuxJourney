@@ -1,12 +1,24 @@
-\* [数据表之间的关系](#数据表之间的关系)
+[数据表之间的关系](#数据表之间的关系)
 
-\* [数据表结构](#数据表结构)
+[数据表结构](#数据表结构)
 
-\* [修改数据](#修改数据)
+[修改数据](#修改数据)
 
-\* [删除数据](#删除数据)
+[删除数据](#删除数据)
 
-\* [单表查找数据](#单表查找数据)
+[单表查找数据](#单表查找数据)
+
+ [外键关系字段添加数据](#外键关系字段添加数据)
+
+[一对多外键关联查询](#一对多外键关联查询)
+
+[多对多插入数据](#多对多插入数据)
+
+[多对多删除数据](#多对多删除数据)
+
+[聚合函数](#聚合函数)
+
+[分组](#分组)
 
 
 
@@ -219,4 +231,239 @@ Book.objects.filter(price__range=[50, 100]).order_by('price')
 ```
 
 
+
+# 外键关系字段添加数据
+
+在数据表定义中，Book表中的publish和Publish表是一个外键关系，那么此时在Book表中插入数据可以这样做：
+
+```python
+# 插入一本A出版社出版的书，首先查到A出版社对象
+publish_obj = Publish.objects.get(name='A')
+
+# 然后将对象赋给Book外键字段
+book_info = {'name': 'LINUX', 'price': 998, 'author': 'mike', 'pub_date': '2019-10-01', 'publish': publish_obj}
+Book.objects.create(**book_info)
+```
+
+
+
+# 一对多外键关联查询
+
+还是Book表和Publish表之间关联查询，可以通过Book表中的外键，查询到其所属的出版社信息，例如：
+
+```python
+# 方式一
+# 首先查询到一条book的对象
+book_obj = Book.objects.get(name="go")
+# 获取book的属性
+book_obj.name  # 书籍名称
+book_obj.price  # 书籍价格
+# 通过外键获取其对应Publish的信息
+book_obj.publish.name  # publish是外建名
+```
+
+
+
+```python
+# 方式二，利用外键查找
+Publish.objects.filter(book__name='go').values('name', 'city')
+# 或者
+Book.objects.filter(name='go').values("publish__name")
+```
+
+> 利用了双下划线，其中book为表名
+
+
+
+```python
+# 某个时间段内的书的出版社信息
+Book.objects.filter(pub_date__gt='2019-12-01', pub_date__lt='2019-12-31').values("publish__name")
+```
+
+
+
+也可以反向查询，通过出版社的对象查询到出版社出版的书：
+
+```python
+# 方式一，先查询指定出版社对象，再将对象赋值到Book表的外键中查询
+publish_obj = Publish.objects.get(name="A")
+book_obj = Book.objects.filter(publish=publish_obj).values('name', 'price')
+```
+
+
+
+```python
+# 方式二，通过 _set方式进行查找
+publish_obj = Publish.objects.get(name="cctv")
+publish_obj.book_set.all()
+```
+
+> 这种方式中book为表名
+
+
+
+```python
+# 方式三，利用外键查找
+Book.objects.filter(publish__name='A').values('name', 'price')
+```
+
+> 利用了双下划线，其中publish为外键名称
+
+
+
+# 多对多插入数据
+
+如果是使用ManyToMany字段创建的多对多关系，中间表是自动生成的，没法用ORM直接插入数据。但可以通过ManyToMany字段赋值来实现绑定多对多关系。
+
+
+
+Book和Auhtor表是一个多对多关系，例如插入某一个书籍的作者信息可以如下：
+
+```python
+# 先查询到某书籍的信息
+book_obj = Book.objects.get(id=4)
+# 在查询到作者信息
+authors_obj = Author.objects.get(id=2)
+# 通过authors字段进行关系绑定
+book_obj.authors.add(authors_obj)
+
+# 如果添加多个作者，则需要加上 *星号
+authors_obj = Author.objects.all()
+book_obj.authors.add(*authors_obj)
+```
+
+
+
+# 多对多删除数据
+
+删除数据直接使用remove方法即可，例如：
+
+```python
+book_obj = Book.objects.get(id=4)
+authors_obj = Author.objects.get(id=2)
+book_obj.authors.remove(authors_obj)
+
+# 如果是删除多个，则需要加上 *星号
+authors_obj = Author.objects.all()
+book_obj.authors.remove(*authors_obj)
+```
+
+
+
+也可以使用指定ID的方式来删除，例如：
+
+```python
+# 取消book id为2，author id为1的对应关系
+book_obj = Book.objects.get(id=2)
+book_obj.authors.remove(1)
+```
+
+
+
+# 多对多查询
+
+多对多查询和一对多查询一样，可以使用双下划线进行外键查询，例如：
+
+```python
+# 查询所有pete写的书，并显示书名和价格以及作者名称
+Book.objects.filter(authors__name='pete').values('name', 'price', 'authors__name')
+```
+
+> 其中authors是Book表中多对多字段
+
+
+
+# 聚合函数
+
+django的聚合函数可以用来进行最大值，均值等操作，首先需要引入一些函数：
+
+```python
+from django.db.models import Avg, Min, Sum, Max, Count
+```
+
+
+
+**聚合函数为aggregate**
+
+例如求Book表中所有书的均价和总价：
+
+```python
+Book.objects.all().aggregate(Avg("price"))
+Book.objects.all().aggregate(Sum("price"))
+```
+
+
+
+如果是需要多表关联，使用前面的方法过滤即可：
+
+```python
+# 求pete出版的书的总价
+Book.objects.filter(authors__name='pete').aggregate(Sum("price"))
+```
+
+
+
+上边这样子写，结果的格式是一个字典，例如：
+
+```python
+{'price__sum': 1341}
+{'price__sum': 99}
+```
+
+> 其中的key为条件和方法的组合
+
+
+
+如果想自定义key，则可以这样做：
+
+```python
+# 自定义key为“pete_money”
+Book.objects.filter(authors__name='pete').aggregate(pete_money=Sum('price'))
+# 返回结果
+{'pete_money': 99}
+```
+
+
+
+获取pete出版的书的个数：
+
+```python
+Book.objects.filter(authors__name='pete').aggregate(Count('name'))
+```
+
+> Count中的条件是什么字段都可以，但是必须有
+
+
+
+# 分组
+
+**分组函数为annotate**
+
+
+
+例如下面的需求就可以使用分组：获取每一个作者出版的书籍的价格总价：
+
+```python
+Book.objects.values("authors__name").annotate(Sum("price"))
+```
+
+> 这里先分组，使用values指定分组的字段名称，这里是作者的名称，然后使用分组方法，指定处理函数为Sum根据价格求和
+
+
+
+其返回的结果为Queryset格式，例如：
+
+```python
+<QuerySet [{'authors__name': 'pete', 'price__sum': 154}, {'authors__name': 'alex', 'price__sum': 99},...]>
+```
+
+
+
+例如：获取每一个出版社出版的最便宜的书：
+
+```python
+Publish.objects.values("name").annotate(pub_min=Min("book__price"))
+```
+
+> 现根据出版社的name进行分组，然后调用annotate进行处理
 
