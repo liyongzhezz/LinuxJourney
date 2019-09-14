@@ -20,6 +20,8 @@
 
 [分组](#分组)
 
+[F查询和Q查询](#F查询和Q查询)
+
 
 
 django中使用ORM操作数据库，其通过实例对象语法，将数据表映射成类，数据记录映射成对象，字段映射称为对象属性，从而可以很方便的操作数据库进行增删改查操作，省去了写复杂sql语句的麻烦。
@@ -467,3 +469,50 @@ Publish.objects.values("name").annotate(pub_min=Min("book__price"))
 
 > 现根据出版社的name进行分组，然后调用annotate进行处理
 
+
+
+# F查询和Q查询
+
+前面的条件查询使用的是filter和get，这两种查询条件是与关系，如果想设置或或者非的条件查询关系，则filter和get做不到，需要使用F和Q查询。
+
+
+
+首先引入F和Q：
+
+```python
+from django.db.models import F, Q
+```
+
+
+
+例如这个需求：每个book的价格便宜10元：
+
+```python
+Book.objects.all().update(price=F("price")-10)
+```
+
+> 首先查找到所有的书，调用update方法进行更新，F('price')可以查询到每一本书的价格
+
+
+
+使用Q查询可以实现或关系或者非关系查询，例如：
+
+```python
+# 查询价格为89元或者名字为go的书籍
+Book.objects.filter(Q(price=89)|Q(name='go'))
+
+# 查询书名不是go的书籍
+Book.objects.filter(~Q(name='go'))
+```
+
+> Q函数中是查询条件，使用管道符 | 表示或关系，使用~ 表示非
+
+
+
+Q查询也可以可一般的查询条件组合使用：
+
+```python
+Book.objects.filter(Q(name='go'), price="20")
+```
+
+> 但是，Q查询一定要在条件第一个
