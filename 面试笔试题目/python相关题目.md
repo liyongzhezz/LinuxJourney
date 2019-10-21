@@ -137,3 +137,29 @@ False
 
 
 更好的方式是使用ctypes，他可以让python调用任何c动态库导出的函数，它会在调用c函数前释放GIL。
+
+
+
+# 使用二分法查找某个数
+
+二分法又叫折半查找，要求待查找的列表是有序的，特点速度快，平均性能好。首先，假设表中元素是按升序排列，将表中间位置记录的关键字与查找关键字比较，如果两者相等，则查找成功；否则利用中间位置记录将表分成前、后两个子表，如果中间位置记录的关键字大于查找关键字，则进一步查找前一子表，否则进一步查找后一子表。重复以上过程，直到找到满足条件的记录，使查找成功，或直到子表不存在为止，此时查找不成功。
+
+```python
+def Search(number_list, target):
+  n = len(number_list)
+  start, end = 0, n-1
+  while start <= end:
+    # 取中间索引
+    mid = (start + end) // 2
+    # 中间值等于目标
+    if number_list[mid] == target:
+      return True
+    # 中间值大于目标，取前半段
+    elif number_list[mid] >= target:
+      end = mid - 1
+    # 中间值小于目标，取后半段
+    else:
+      start = mid + 1
+  return False
+```
+
