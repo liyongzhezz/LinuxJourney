@@ -167,7 +167,7 @@ email_server = mail.example.com
 email_server_port = 25
 email_username = harbor@example.com
 email_password = harbor123
-email_from = harbor@xunlei.com
+email_from = harbor@example.com
 
 // harbor管理员密码
 harbor_admin_password = Harbor12345
